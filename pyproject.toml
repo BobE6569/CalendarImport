@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "calendar-import"
+version = "0.1.0"
+description = "Desktop Excel itinerary importer for Google Calendar"
+requires-python = ">=3.10"
+dependencies = [
+  "google-api-python-client>=2.137.0",
+  "google-auth-oauthlib>=1.2.1",
+  "openpyxl>=3.1.5",
+  "tzdata>=2024.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
