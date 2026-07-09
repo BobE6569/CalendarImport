@@ -3,8 +3,10 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Any
+from zipfile import BadZipFile
 
 from openpyxl import load_workbook
+from openpyxl.utils.exceptions import InvalidFileException
 
 from .models import ItineraryEvent
 from .timezone_resolver import TimeZoneResolver
@@ -18,7 +20,22 @@ class ItineraryReadError(ValueError):
 
 
 def read_itinerary(path: Path, time_zone_resolver: TimeZoneResolver) -> list[ItineraryEvent]:
-    workbook = load_workbook(path, data_only=True)
+    try:
+        workbook = load_workbook(path, data_only=True)
+    except PermissionError as exc:
+        raise ItineraryReadError(
+            "CalendarImport could not open the Excel file.\n\n"
+            "Close the workbook in Excel, make sure OneDrive has downloaded it locally, "
+            "then try again. If it still fails, save a copy to a local folder such as "
+            "Documents and select that copy."
+        ) from exc
+    except FileNotFoundError as exc:
+        raise ItineraryReadError("The selected Excel file could not be found. Select the file again.") from exc
+    except (BadZipFile, InvalidFileException, OSError) as exc:
+        raise ItineraryReadError(
+            "CalendarImport could not read the selected workbook. "
+            "Make sure it is a valid .xlsx or .xlsm file and that it is not blocked by OneDrive or Excel."
+        ) from exc
     if "Itinerary" not in workbook.sheetnames:
         raise ItineraryReadError("The workbook does not contain a tab named 'Itinerary'.")
 
@@ -130,4 +147,3 @@ def _cell_text(value: Any) -> str:
 
 def _is_blank(value: Any) -> bool:
     return value is None or (isinstance(value, str) and not value.strip())
-

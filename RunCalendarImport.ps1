@@ -27,4 +27,5 @@ if (-not (Test-Path $venvPython)) {
 }
 
 & $venvPython -m pip install -r (Join-Path $projectRoot "requirements.txt")
+& $venvPython -m pip install -e $projectRoot
 & $venvPython -m calendar_import

@@ -42,6 +42,7 @@ Any columns after `Link` are added to the event notes when their row value is no
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
+.\.venv\Scripts\python -m pip install -e .
 ```
 
 2. Run the app:
@@ -69,3 +70,12 @@ The first Google run opens a Google sign-in page and stores `token.json` locally
 ## Time Zones
 
 CalendarImport includes a small starter map for common locations. If a location is unknown, the app asks for an IANA time zone such as `Europe/Rome` or `America/New_York`, then saves it in `location_timezones.json`.
+
+## Excel Permission Errors
+
+If Windows reports `Permission denied` while reading a OneDrive workbook:
+
+1. Close the workbook in Excel.
+2. In File Explorer, right-click the workbook and choose **Always keep on this device**.
+3. Try the import again.
+4. If it still fails, save a copy to a local folder such as Documents and select that copy.
