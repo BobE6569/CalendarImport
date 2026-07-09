@@ -1,6 +1,6 @@
 # CalendarImport
 
-CalendarImport is a standalone desktop program that imports itinerary rows from an Excel workbook into a Google Calendar.
+CalendarImport is a standalone desktop program that imports itinerary rows from an Excel workbook into an Outlook or Google calendar.
 
 ## What It Does
 
@@ -8,7 +8,7 @@ CalendarImport is a standalone desktop program that imports itinerary rows from 
 - Reads the `Itinerary` tab.
 - Uses the first row as column titles.
 - Prompts for an event title prefix, defaulting to the Excel file name.
-- Creates or updates events in a selected Google Calendar.
+- Creates or updates events in a selected Outlook or Google calendar.
 - Uses the `Location` value as both the calendar event location and the suffix for the event title.
 - Resolves event time zones from the location, reusing the previous row's time zone when a location is missing or cannot be resolved.
 - Adds all remaining non-blank columns to the event notes as `Column title: value`.
@@ -37,16 +37,14 @@ Any columns after `Link` are added to the event notes when their row value is no
 
 ## Setup
 
-1. Create a Google Cloud OAuth desktop credential for the Google Calendar API.
-2. Save the downloaded file as `credentials.json` in this project folder.
-3. Install dependencies:
+1. Install dependencies:
 
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
 ```
 
-4. Run the app:
+2. Run the app:
 
 ```powershell
 .\.venv\Scripts\python -m calendar_import
@@ -54,7 +52,19 @@ py -m venv .venv
 
 Or run `RunCalendarImport.ps1`, which creates the virtual environment and installs dependencies automatically.
 
-The first run opens a Google sign-in page and stores `token.json` locally for future imports.
+## Outlook Setup
+
+Outlook import uses the installed Microsoft Outlook desktop app and the currently configured Outlook profile. Choose `Outlook`, connect, pick the target calendar folder, then import.
+
+The `Link` value is added to the appointment body and, when Outlook allows it, to the appointment web page field.
+
+## Google Setup
+
+1. Create a Google Cloud OAuth desktop credential for the Google Calendar API.
+2. Save the downloaded file as `credentials.json` in this project folder.
+3. Choose `Google` in the app and connect.
+
+The first Google run opens a Google sign-in page and stores `token.json` locally for future imports.
 
 ## Time Zones
 
