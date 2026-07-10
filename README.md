@@ -8,10 +8,12 @@ CalendarImport is a standalone desktop program that imports itinerary rows from 
 - Reads the `Itinerary` tab.
 - Uses the first row as column titles.
 - Prompts for an event title prefix, defaulting to the Excel file name.
+- Prompts for an optional user name or email to invite on each imported event.
 - Creates or updates events in a selected Outlook or Google calendar.
 - Uses the `Location` value as both the calendar event location and the suffix for the event title.
 - Resolves event time zones from the location, reusing the previous row's time zone when a location is missing or cannot be resolved.
-- Adds all remaining non-blank columns to the event notes as `Column title: value`.
+- Adds all remaining non-blank columns to the event notes as `Column title: value`, separated by one blank line.
+- Always places the `Link` value at the bottom of the event notes.
 
 ## Excel Layout
 
@@ -34,6 +36,7 @@ Any columns after `Link` are added to the event notes when their row value is no
 - If only one of `From` or `To` is filled, start and end are set to that same time.
 - If both are filled, start uses `From` and end uses `To`.
 - Existing events are found by exact title in the selected calendar. When several match, CalendarImport prefers the one on the same date.
+- If an optional invitee is provided, CalendarImport adds that invitee to each event.
 
 ## Setup
 

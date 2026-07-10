@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, time, timedelta
 
+from .event_formatting import event_notes
 from .models import ItineraryEvent
 
 
@@ -43,7 +44,14 @@ class OutlookCalendarClient:
         calendars.sort(key=lambda item: (not item["primary"], item["summary"].lower()))
         return calendars
 
-    def upsert_events(self, calendar_id: str, title_prefix: str, events: list[ItineraryEvent], progress=None) -> dict[str, int]:
+    def upsert_events(
+        self,
+        calendar_id: str,
+        title_prefix: str,
+        events: list[ItineraryEvent],
+        invitee: str = "",
+        progress=None,
+    ) -> dict[str, int]:
         folder = self._folder_from_id(calendar_id)
         counts = {"created": 0, "updated": 0}
 
@@ -58,7 +66,7 @@ class OutlookCalendarClient:
                 counts["created"] += 1
                 action = "created"
 
-            self._apply_event(appointment, subject, event)
+            self._apply_event(appointment, subject, event, invitee)
             appointment.Save()
 
             if progress:
@@ -123,11 +131,12 @@ class OutlookCalendarClient:
 
         return None
 
-    def _apply_event(self, appointment, subject: str, event: ItineraryEvent) -> None:
+    def _apply_event(self, appointment, subject: str, event: ItineraryEvent, invitee: str = "") -> None:
         appointment.Subject = subject
         appointment.Location = event.location
-        appointment.Body = _body(event)
+        appointment.Body = event_notes(event)
         appointment.AllDayEvent = bool(event.is_all_day)
+        self._apply_invitee(appointment, invitee)
 
         if event.is_all_day:
             appointment.Start = datetime.combine(event.event_date, time.min)
@@ -158,12 +167,18 @@ class OutlookCalendarClient:
         except Exception:
             pass
 
-
-def _body(event: ItineraryEvent) -> str:
-    lines = [f"{label}: {value}" for label, value in event.notes]
-    if event.url:
-        lines.append(f"Link: {event.url}")
-    return "\n".join(lines)
+    def _apply_invitee(self, appointment, invitee: str) -> None:
+        clean_invitee = invitee.strip()
+        if not clean_invitee:
+            return
+        try:
+            recipients = appointment.Recipients
+            for index in range(1, recipients.Count + 1):
+                if recipients.Item(index).Name.lower() == clean_invitee.lower():
+                    return
+            recipients.Add(clean_invitee)
+        except Exception:
+            pass
 
 
 def _outlook_datetime(value: datetime) -> str:

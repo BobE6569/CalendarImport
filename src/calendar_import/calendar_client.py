@@ -8,6 +8,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+from .event_formatting import event_notes
 from .models import ItineraryEvent
 
 
@@ -35,12 +36,19 @@ class GoogleCalendarClient:
             request = self.service.calendarList().list_next(request, response)
         return calendars
 
-    def upsert_events(self, calendar_id: str, title_prefix: str, events: list[ItineraryEvent], progress=None) -> dict[str, int]:
+    def upsert_events(
+        self,
+        calendar_id: str,
+        title_prefix: str,
+        events: list[ItineraryEvent],
+        invitee: str = "",
+        progress=None,
+    ) -> dict[str, int]:
         counts = {"created": 0, "updated": 0}
         for index, event in enumerate(events, start=1):
             summary = event.summary(title_prefix)
             existing = self._find_existing_event(calendar_id, summary, event.event_date)
-            body = self._event_body(summary, event)
+            body = self._event_body(summary, event, invitee)
             if existing:
                 self.service.events().patch(calendarId=calendar_id, eventId=existing["id"], body=body).execute()
                 counts["updated"] += 1
@@ -74,14 +82,16 @@ class GoogleCalendarClient:
         same_date = [event for event in candidates if _event_start_date(event) == event_date.isoformat()]
         return same_date[0] if same_date else candidates[0]
 
-    def _event_body(self, summary: str, event: ItineraryEvent) -> dict:
+    def _event_body(self, summary: str, event: ItineraryEvent, invitee: str = "") -> dict:
         body = {
             "summary": summary,
             "location": event.location,
-            "description": _description(event),
+            "description": event_notes(event),
         }
         if event.url:
             body["source"] = {"title": "Itinerary link", "url": event.url}
+        if invitee.strip():
+            body["attendees"] = [{"email": invitee.strip()}]
 
         if event.is_all_day:
             end_date = event.event_date + timedelta(days=1)
@@ -115,14 +125,6 @@ class GoogleCalendarClient:
             credentials = flow.run_local_server(port=0)
         token_path.write_text(credentials.to_json(), encoding="utf-8")
         return credentials
-
-
-def _description(event: ItineraryEvent) -> str:
-    lines = [f"{label}: {value}" for label, value in event.notes]
-    if event.url:
-        lines.append(f"Link: {event.url}")
-    return "\n".join(lines)
-
 
 def _event_start_date(event: dict) -> str | None:
     start = event.get("start", {})

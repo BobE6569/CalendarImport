@@ -1,7 +1,8 @@
 from datetime import date, datetime
 
+from calendar_import.event_formatting import event_notes
 from calendar_import.models import ItineraryEvent
-from calendar_import.outlook_calendar_client import _body, _outlook_datetime
+from calendar_import.outlook_calendar_client import _outlook_datetime
 
 
 def test_outlook_body_includes_notes_and_link():
@@ -16,7 +17,7 @@ def test_outlook_body_includes_notes_and_link():
         time_zone="Europe/Rome",
     )
 
-    assert _body(event) == "Details: Tour\nConfirmation: ABC123\nLink: https://example.com"
+    assert event_notes(event) == "Details: Tour\n\nConfirmation: ABC123\n\nLink: https://example.com"
 
 
 def test_outlook_datetime_filter_format():

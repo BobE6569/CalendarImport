@@ -20,6 +20,7 @@ class CalendarImportApp:
         self.status = StringVar(value="Select an Excel itinerary file to begin.")
         self.excel_path: Path | None = None
         self.title_prefix = StringVar(value="")
+        self.invitee = StringVar(value="")
         self.calendar_provider = StringVar(value="outlook")
         self.calendars: list[dict[str, str]] = []
         self.calendar_client = None
@@ -67,7 +68,15 @@ class CalendarImportApp:
             parent=self.root,
         )
         self.title_prefix.set((title or default_title).strip() or default_title)
-        self.status.set(f"Selected {self.excel_path.name}. Title: {self.title_prefix.get()}")
+        invitee = simpledialog.askstring(
+            "Optional invitee",
+            "User name or email to invite on each calendar event:",
+            initialvalue=self.invitee.get(),
+            parent=self.root,
+        )
+        self.invitee.set((invitee or "").strip())
+        invitee_status = f" Invitee: {self.invitee.get()}" if self.invitee.get() else ""
+        self.status.set(f"Selected {self.excel_path.name}. Title: {self.title_prefix.get()}.{invitee_status}")
 
     def clear_calendar_connection(self) -> None:
         self.calendar_client = None
@@ -119,7 +128,13 @@ class CalendarImportApp:
 
         calendar_id = self.calendars[selection[0]]["id"]
         try:
-            counts = self.calendar_client.upsert_events(calendar_id, self.title_prefix.get(), events, self.update_progress)
+            counts = self.calendar_client.upsert_events(
+                calendar_id,
+                self.title_prefix.get(),
+                events,
+                self.invitee.get(),
+                self.update_progress,
+            )
         except Exception as exc:
             messagebox.showerror("Calendar import failed", str(exc))
             return
