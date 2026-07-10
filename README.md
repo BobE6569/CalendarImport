@@ -54,7 +54,7 @@ py -m venv .venv
 .\.venv\Scripts\python -m calendar_import
 ```
 
-Or run `RunCalendarImport.ps1`, which creates the virtual environment and installs dependencies automatically.
+Or run `RunCalendarImport.cmd` / `RunCalendarImport.ps1`, which creates the virtual environment and installs dependencies automatically.
 
 ## Outlook Setup
 
