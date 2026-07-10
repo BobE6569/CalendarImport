@@ -8,4 +8,4 @@ dist/
 credentials.json
 token.json
 location_timezones.json
-
+*_timezones.txt

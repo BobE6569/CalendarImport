@@ -72,7 +72,15 @@ The first Google run opens a Google sign-in page and stores `token.json` locally
 
 ## Time Zones
 
-CalendarImport includes a small starter map for common locations. If a location is unknown, the app asks for an IANA time zone such as `Europe/Rome` or `America/New_York`, then saves it in `location_timezones.json`.
+CalendarImport includes a small starter map for common locations. If a location is unknown, the app asks for an IANA time zone such as `Europe/Rome` or `America/New_York`, then saves it in a workbook-specific text file such as `Norway_Itinerary_Aug_2026_Sub_timezones.txt`.
+
+The text file uses this format:
+
+```text
+Location=IANA time zone
+```
+
+You can edit that file by hand if a location needs a different time zone later.
 
 ## Excel Permission Errors
 

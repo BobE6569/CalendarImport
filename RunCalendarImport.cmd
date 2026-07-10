@@ -3,6 +3,7 @@ setlocal
 
 set "PROJECT_ROOT=%~dp0"
 set "VENV_PYTHON=%PROJECT_ROOT%.venv\Scripts\python.exe"
+cd /d "%PROJECT_ROOT%"
 
 if not exist "%VENV_PYTHON%" (
     where py >nul 2>nul
@@ -19,7 +20,7 @@ if not exist "%VENV_PYTHON%" (
 "%VENV_PYTHON%" -m pip install -r "%PROJECT_ROOT%requirements.txt"
 if errorlevel 1 goto fail
 
-"%VENV_PYTHON%" -m pip install -e "%PROJECT_ROOT%"
+"%VENV_PYTHON%" -m pip install -e "%PROJECT_ROOT%."
 if errorlevel 1 goto fail
 
 "%VENV_PYTHON%" -m calendar_import
@@ -37,4 +38,3 @@ echo.
 echo CalendarImport could not start. Review the error above.
 pause
 exit /b 1
-

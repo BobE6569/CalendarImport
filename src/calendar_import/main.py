@@ -6,7 +6,7 @@ from tkinter import Button, Label, Listbox, Radiobutton, StringVar, Tk, filedial
 from .calendar_client import GoogleCalendarClient
 from .excel_reader import ItineraryReadError, read_itinerary
 from .outlook_calendar_client import OutlookCalendarClient
-from .timezone_resolver import DEFAULT_TIME_ZONE, TimeZoneResolver
+from .timezone_resolver import DEFAULT_TIME_ZONE, TimeZoneResolver, mapping_path_for_workbook
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
@@ -116,7 +116,7 @@ class CalendarImportApp:
             messagebox.showwarning("Missing calendar", "Choose the target calendar.")
             return
 
-        resolver = TimeZoneResolver(PROJECT_DIR / "location_timezones.json", self.ask_for_time_zone)
+        resolver = TimeZoneResolver(mapping_path_for_workbook(PROJECT_DIR, self.excel_path), self.ask_for_time_zone)
         try:
             events = read_itinerary(self.excel_path, resolver)
         except ItineraryReadError as exc:
