@@ -30,6 +30,21 @@ def test_outlook_datetime_filter_format():
     assert _outlook_datetime(datetime(2026, 8, 1, 9, 30)) == "08/01/2026 09:30 AM"
 
 
+def test_timed_event_notes_do_not_include_time_zone_text():
+    event = ItineraryEvent(
+        row_number=2,
+        event_date=date(2027, 2, 20),
+        location="Buenos Aires, Argentina",
+        start_time=time(7, 30),
+        end_time=time(20, 0),
+        url="",
+        notes=[],
+        time_zone="America/Buenos_Aires",
+    )
+
+    assert event_notes(event) == "From / To: 2027-02-20 7:30 AM / 2027-02-20 8:00 PM"
+
+
 def test_outlook_time_zone_map_includes_buenos_aires():
     assert IANA_TO_WINDOWS_TIME_ZONE["America/Buenos_Aires"] == "Argentina Standard Time"
     assert IANA_TO_WINDOWS_TIME_ZONE["America/Argentina/Buenos_Aires"] == "Argentina Standard Time"

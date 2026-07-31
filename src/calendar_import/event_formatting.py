@@ -21,7 +21,7 @@ def _from_to_line(event: ItineraryEvent) -> str:
     end = datetime.combine(event.event_date, event.end_time)
     if end < start:
         end += timedelta(days=1)
-    return f"From / To: {_format_datetime(start)} {event.time_zone} / {_format_datetime(end)} {event.time_zone}"
+    return f"From / To: {_format_datetime(start)} / {_format_datetime(end)}"
 
 
 def _format_datetime(value: datetime) -> str:
