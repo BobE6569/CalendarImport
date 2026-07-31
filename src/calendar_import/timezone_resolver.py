@@ -8,12 +8,14 @@ DEFAULT_TIME_ZONE = "America/New_York"
 
 BUILT_IN_LOCATION_TIME_ZONES = {
     "atlanta": "America/New_York",
+    "buenos aires": "America/Buenos_Aires",
     "boston": "America/New_York",
     "chicago": "America/Chicago",
     "denver": "America/Denver",
     "florence": "Europe/Rome",
     "firenze": "Europe/Rome",
     "las vegas": "America/Los_Angeles",
+    "lima": "America/Lima",
     "london": "Europe/London",
     "los angeles": "America/Los_Angeles",
     "milan": "Europe/Rome",
@@ -27,6 +29,7 @@ BUILT_IN_LOCATION_TIME_ZONES = {
     "rome": "Europe/Rome",
     "roma": "Europe/Rome",
     "san francisco": "America/Los_Angeles",
+    "santiago": "America/Santiago",
     "venice": "Europe/Rome",
     "venezia": "Europe/Rome",
     "washington dc": "America/New_York",

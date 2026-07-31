@@ -10,10 +10,14 @@ OL_APPOINTMENT_ITEM = 1
 OL_FOLDER_CALENDAR = 9
 
 IANA_TO_WINDOWS_TIME_ZONE = {
+    "America/Argentina/Buenos_Aires": "Argentina Standard Time",
+    "America/Buenos_Aires": "Argentina Standard Time",
     "America/Chicago": "Central Standard Time",
     "America/Denver": "Mountain Standard Time",
+    "America/Lima": "SA Pacific Standard Time",
     "America/Los_Angeles": "Pacific Standard Time",
     "America/New_York": "Eastern Standard Time",
+    "America/Santiago": "Pacific SA Standard Time",
     "Europe/London": "GMT Standard Time",
     "Europe/Paris": "Romance Standard Time",
     "Europe/Rome": "W. Europe Standard Time",
