@@ -60,7 +60,11 @@ Or run `RunCalendarImport.cmd` / `RunCalendarImport.ps1`, which creates the virt
 
 Outlook import uses the installed Microsoft Outlook desktop app and the currently configured Outlook profile. Choose `Outlook`, connect, pick the target calendar folder, then import.
 
+Outlook imports keep the clock time exactly as entered in Excel. For example, `7:30 AM` in the workbook is written as `7:30 AM` in Outlook.
+
 The `Link` value is added to the appointment body and, when Outlook allows it, to the appointment web page field.
+
+If Outlook shows a location as `Unknown`, that means Outlook could not match the typed location to one of its own place records. The location text is still saved on the event.
 
 ## Google Setup
 

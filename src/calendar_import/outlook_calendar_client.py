@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 from .event_formatting import event_notes
 from .models import ItineraryEvent
@@ -146,13 +146,12 @@ class OutlookCalendarClient:
             appointment.Start = datetime.combine(event.event_date, time.min)
             appointment.End = datetime.combine(event.event_date + timedelta(days=1), time.min)
         else:
-            start = datetime.combine(event.event_date, event.start_time)
-            end = datetime.combine(event.event_date, event.end_time)
+            start = _to_outlook_wall_datetime(event.event_date, event.start_time)
+            end = _to_outlook_wall_datetime(event.event_date, event.end_time)
             if end < start:
                 end += timedelta(days=1)
             appointment.Start = start
             appointment.End = end
-            self._apply_time_zone(appointment, event.time_zone)
 
         if event.url:
             try:
@@ -187,3 +186,7 @@ class OutlookCalendarClient:
 
 def _outlook_datetime(value: datetime) -> str:
     return value.strftime("%m/%d/%Y %I:%M %p")
+
+
+def _to_outlook_wall_datetime(event_date: date, event_time: time) -> datetime:
+    return datetime.combine(event_date, event_time)
