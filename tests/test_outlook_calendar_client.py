@@ -18,7 +18,12 @@ def test_outlook_body_includes_notes_and_link():
         time_zone="Europe/Rome",
     )
 
-    assert event_notes(event) == "Details: Tour\n\nConfirmation: ABC123\n\nLink: https://example.com"
+    assert event_notes(event) == (
+        "From / To: 2026-08-01 all day\n\n"
+        "Details: Tour\n\n"
+        "Confirmation: ABC123\n\n"
+        "Link: https://example.com"
+    )
 
 
 def test_outlook_datetime_filter_format():

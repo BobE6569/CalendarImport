@@ -6,6 +6,7 @@ from tkinter import Button, Label, Listbox, Radiobutton, StringVar, Tk, filedial
 from .calendar_client import GoogleCalendarClient
 from .excel_reader import ItineraryReadError, read_itinerary
 from .outlook_calendar_client import OutlookCalendarClient
+from .preferences import Preferences
 from .timezone_resolver import DEFAULT_TIME_ZONE, TimeZoneResolver, mapping_path_for_workbook
 
 
@@ -18,9 +19,10 @@ class CalendarImportApp:
         self.root.title("CalendarImport")
         self.root.geometry("560x430")
         self.status = StringVar(value="Select an Excel itinerary file to begin.")
+        self.preferences = Preferences(PROJECT_DIR / "calendar_import_settings.json")
         self.excel_path: Path | None = None
-        self.title_prefix = StringVar(value="")
-        self.invitee = StringVar(value="")
+        self.title_prefix = StringVar(value=self.preferences.get("last_title"))
+        self.invitee = StringVar(value=self.preferences.get("last_invitee"))
         self.calendar_provider = StringVar(value="outlook")
         self.calendars: list[dict[str, str]] = []
         self.calendar_client = None
@@ -60,7 +62,7 @@ class CalendarImportApp:
         if not file_name:
             return
         self.excel_path = Path(file_name)
-        default_title = self.excel_path.stem
+        default_title = self.title_prefix.get().strip() or self.excel_path.stem
         title = simpledialog.askstring(
             "Event title",
             "Title to use for imported events:",
@@ -68,6 +70,7 @@ class CalendarImportApp:
             parent=self.root,
         )
         self.title_prefix.set((title or default_title).strip() or default_title)
+        self.preferences.set("last_title", self.title_prefix.get())
         invitee = simpledialog.askstring(
             "Optional invitee",
             "User name or email to invite on each calendar event:",
@@ -75,6 +78,7 @@ class CalendarImportApp:
             parent=self.root,
         )
         self.invitee.set((invitee or "").strip())
+        self.preferences.set("last_invitee", self.invitee.get())
         invitee_status = f" Invitee: {self.invitee.get()}" if self.invitee.get() else ""
         self.status.set(f"Selected {self.excel_path.name}. Title: {self.title_prefix.get()}.{invitee_status}")
 

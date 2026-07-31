@@ -7,5 +7,6 @@ build/
 dist/
 credentials.json
 token.json
+calendar_import_settings.json
 location_timezones.json
 *_timezones.txt

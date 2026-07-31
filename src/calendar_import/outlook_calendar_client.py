@@ -150,8 +150,10 @@ class OutlookCalendarClient:
             end = _to_outlook_wall_datetime(event.event_date, event.end_time)
             if end < start:
                 end += timedelta(days=1)
-            appointment.Start = start
-            appointment.End = end
+            self._apply_current_outlook_time_zone(appointment)
+            appointment.Start = _outlook_datetime(start)
+            appointment.End = _outlook_datetime(end)
+            self._apply_start_in_current_time_zone(appointment, start, end)
 
         if event.url:
             try:
@@ -167,6 +169,21 @@ class OutlookCalendarClient:
             outlook_time_zone = self.namespace.TimeZones.Item(windows_time_zone)
             appointment.StartTimeZone = outlook_time_zone
             appointment.EndTimeZone = outlook_time_zone
+        except Exception:
+            pass
+
+    def _apply_current_outlook_time_zone(self, appointment) -> None:
+        try:
+            outlook_time_zone = self.outlook.TimeZones.CurrentTimeZone
+            appointment.StartTimeZone = outlook_time_zone
+            appointment.EndTimeZone = outlook_time_zone
+        except Exception:
+            pass
+
+    def _apply_start_in_current_time_zone(self, appointment, start: datetime, end: datetime) -> None:
+        try:
+            appointment.StartInStartTimeZone = _outlook_datetime(start)
+            appointment.EndInEndTimeZone = _outlook_datetime(end)
         except Exception:
             pass
 

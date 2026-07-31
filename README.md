@@ -13,6 +13,7 @@ CalendarImport is a standalone desktop program that imports itinerary rows from 
 - Uses the `Location` value as both the calendar event location and the suffix for the event title.
 - Resolves event time zones from the location, reusing the previous row's time zone when a location is missing or cannot be resolved.
 - Adds all remaining non-blank columns to the event notes as `Column title: value`, separated by one blank line.
+- Adds the imported From / To date and time as the first line of the event notes.
 - Always places the `Link` value at the bottom of the event notes.
 
 ## Excel Layout
@@ -64,7 +65,7 @@ Outlook imports keep the clock time exactly as entered in Excel. For example, `7
 
 The `Link` value is added to the appointment body and, when Outlook allows it, to the appointment web page field.
 
-If Outlook shows a location as `Unknown`, that means Outlook could not match the typed location to one of its own place records. The location text is still saved on the event.
+If Outlook shows a location as `Unknown`, that means Outlook could not match the typed location to one of its own place records. The location text is still saved on the event. Outlook's desktop automation interface does not provide a reliable way for CalendarImport to force-select one of the map suggestions.
 
 ## Google Setup
 
