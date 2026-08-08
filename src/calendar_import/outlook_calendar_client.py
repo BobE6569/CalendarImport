@@ -141,6 +141,7 @@ class OutlookCalendarClient:
         appointment.Body = event_notes(event)
         appointment.AllDayEvent = bool(event.is_all_day)
         self._apply_invitee(appointment, invitee)
+        self._apply_reminder(appointment, event.reminder_minutes_before_start)
 
         if event.is_all_day:
             appointment.Start = datetime.combine(event.event_date, time.min)
@@ -150,10 +151,11 @@ class OutlookCalendarClient:
             end = _to_outlook_wall_datetime(event.event_date, event.end_time)
             if end < start:
                 end += timedelta(days=1)
-            self._apply_current_outlook_time_zone(appointment)
-            appointment.Start = _outlook_datetime(start)
-            appointment.End = _outlook_datetime(end)
-            self._apply_start_in_current_time_zone(appointment, start, end)
+            if self._apply_event_time_zone(appointment, event.time_zone):
+                self._apply_start_in_event_time_zone(appointment, start, end)
+            else:
+                appointment.Start = _outlook_datetime(start)
+                appointment.End = _outlook_datetime(end)
 
         if event.url:
             try:
@@ -161,31 +163,23 @@ class OutlookCalendarClient:
             except Exception:
                 pass
 
-    def _apply_time_zone(self, appointment, iana_time_zone: str) -> None:
+    def _apply_event_time_zone(self, appointment, iana_time_zone: str) -> bool:
         windows_time_zone = IANA_TO_WINDOWS_TIME_ZONE.get(iana_time_zone)
-        if not windows_time_zone:
-            return
         try:
-            outlook_time_zone = self.namespace.TimeZones.Item(windows_time_zone)
+            outlook_time_zone = self.outlook.TimeZones.Item(windows_time_zone) if windows_time_zone else self.outlook.TimeZones.CurrentTimeZone
             appointment.StartTimeZone = outlook_time_zone
             appointment.EndTimeZone = outlook_time_zone
+            return True
         except Exception:
-            pass
+            return False
 
-    def _apply_current_outlook_time_zone(self, appointment) -> None:
-        try:
-            outlook_time_zone = self.outlook.TimeZones.CurrentTimeZone
-            appointment.StartTimeZone = outlook_time_zone
-            appointment.EndTimeZone = outlook_time_zone
-        except Exception:
-            pass
-
-    def _apply_start_in_current_time_zone(self, appointment, start: datetime, end: datetime) -> None:
+    def _apply_start_in_event_time_zone(self, appointment, start: datetime, end: datetime) -> None:
         try:
             appointment.StartInStartTimeZone = _outlook_datetime(start)
             appointment.EndInEndTimeZone = _outlook_datetime(end)
         except Exception:
-            pass
+            appointment.Start = _outlook_datetime(start)
+            appointment.End = _outlook_datetime(end)
 
     def _apply_invitee(self, appointment, invitee: str) -> None:
         clean_invitee = invitee.strip()
@@ -197,6 +191,15 @@ class OutlookCalendarClient:
                 if recipients.Item(index).Name.lower() == clean_invitee.lower():
                     return
             recipients.Add(clean_invitee)
+        except Exception:
+            pass
+
+    def _apply_reminder(self, appointment, minutes_before_start: int | None) -> None:
+        if minutes_before_start is None:
+            return
+        try:
+            appointment.ReminderSet = True
+            appointment.ReminderMinutesBeforeStart = max(0, int(minutes_before_start))
         except Exception:
             pass
 

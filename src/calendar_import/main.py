@@ -6,6 +6,7 @@ from tkinter import Button, Label, Listbox, Radiobutton, StringVar, Tk, filedial
 from .calendar_client import GoogleCalendarClient
 from .excel_reader import ItineraryReadError, read_itinerary
 from .outlook_calendar_client import OutlookCalendarClient
+from .pcs_reader import read_pcs_club_events
 from .preferences import Preferences
 from .timezone_resolver import DEFAULT_TIME_ZONE, TimeZoneResolver, mapping_path_for_workbook
 
@@ -17,18 +18,34 @@ class CalendarImportApp:
     def __init__(self) -> None:
         self.root = Tk()
         self.root.title("CalendarImport")
-        self.root.geometry("560x430")
+        self.root.geometry("560x500")
         self.status = StringVar(value="Select an Excel itinerary file to begin.")
         self.preferences = Preferences(PROJECT_DIR / "calendar_import_settings.json")
         self.excel_path: Path | None = None
         self.title_prefix = StringVar(value=self.preferences.get("last_title"))
         self.invitee = StringVar(value=self.preferences.get("last_invitee"))
+        self.processing_mode = StringVar(value="vacation")
         self.calendar_provider = StringVar(value="outlook")
         self.calendars: list[dict[str, str]] = []
         self.calendar_client = None
 
         Label(self.root, text="CalendarImport", font=("Segoe UI", 18, "bold")).pack(pady=(18, 6))
         Label(self.root, textvariable=self.status, wraplength=500, justify="center").pack(pady=(0, 14))
+        Label(self.root, text="Processing type").pack(pady=(4, 0))
+        Radiobutton(
+            self.root,
+            text="Vacation Itinerary",
+            variable=self.processing_mode,
+            value="vacation",
+            command=self.processing_mode_changed,
+        ).pack()
+        Radiobutton(
+            self.root,
+            text="PCS Club Events",
+            variable=self.processing_mode,
+            value="pcs",
+            command=self.processing_mode_changed,
+        ).pack()
         Button(self.root, text="Select Excel File", command=self.select_excel_file, width=24).pack(pady=4)
         Label(self.root, text="Calendar service").pack(pady=(8, 0))
         Radiobutton(
@@ -54,6 +71,11 @@ class CalendarImportApp:
     def run(self) -> None:
         self.root.mainloop()
 
+    def processing_mode_changed(self) -> None:
+        if self.processing_mode.get() == "pcs":
+            self.calendar_provider.set("outlook")
+        self.clear_calendar_connection()
+
     def select_excel_file(self) -> None:
         file_name = filedialog.askopenfilename(
             title="Select Excel itinerary",
@@ -62,15 +84,16 @@ class CalendarImportApp:
         if not file_name:
             return
         self.excel_path = Path(file_name)
-        default_title = self.title_prefix.get().strip() or self.excel_path.stem
-        title = simpledialog.askstring(
-            "Event title",
-            "Title to use for imported events:",
-            initialvalue=default_title,
-            parent=self.root,
-        )
-        self.title_prefix.set((title or default_title).strip() or default_title)
-        self.preferences.set("last_title", self.title_prefix.get())
+        if self.processing_mode.get() == "vacation":
+            default_title = self.title_prefix.get().strip() or self.excel_path.stem
+            title = simpledialog.askstring(
+                "Event title",
+                "Title to use for imported events:",
+                initialvalue=default_title,
+                parent=self.root,
+            )
+            self.title_prefix.set((title or default_title).strip() or default_title)
+            self.preferences.set("last_title", self.title_prefix.get())
         invitee = simpledialog.askstring(
             "Optional invitee",
             "User name or email to invite on each calendar event:",
@@ -80,7 +103,8 @@ class CalendarImportApp:
         self.invitee.set((invitee or "").strip())
         self.preferences.set("last_invitee", self.invitee.get())
         invitee_status = f" Invitee: {self.invitee.get()}" if self.invitee.get() else ""
-        self.status.set(f"Selected {self.excel_path.name}. Title: {self.title_prefix.get()}.{invitee_status}")
+        title_status = f" Title: {self.title_prefix.get()}." if self.processing_mode.get() == "vacation" else ""
+        self.status.set(f"Selected {self.excel_path.name}.{title_status}{invitee_status}")
 
     def clear_calendar_connection(self) -> None:
         self.calendar_client = None
@@ -120,9 +144,12 @@ class CalendarImportApp:
             messagebox.showwarning("Missing calendar", "Choose the target calendar.")
             return
 
-        resolver = TimeZoneResolver(mapping_path_for_workbook(PROJECT_DIR, self.excel_path), self.ask_for_time_zone)
         try:
-            events = read_itinerary(self.excel_path, resolver)
+            if self.processing_mode.get() == "pcs":
+                events = read_pcs_club_events(self.excel_path)
+            else:
+                resolver = TimeZoneResolver(mapping_path_for_workbook(PROJECT_DIR, self.excel_path), self.ask_for_time_zone)
+                events = read_itinerary(self.excel_path, resolver)
         except ItineraryReadError as exc:
             messagebox.showerror("Excel import failed", str(exc))
             return
@@ -159,6 +186,8 @@ class CalendarImportApp:
         self.root.update_idletasks()
 
     def _create_calendar_client(self):
+        if self.processing_mode.get() == "pcs":
+            self.calendar_provider.set("outlook")
         if self.calendar_provider.get() == "outlook":
             return OutlookCalendarClient()
         return GoogleCalendarClient(PROJECT_DIR)

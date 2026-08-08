@@ -14,15 +14,19 @@ class ItineraryEvent:
     url: str
     notes: list[tuple[str, str]]
     time_zone: str
+    title_override: str = ""
+    note_override: str = ""
+    reminder_minutes_before_start: int | None = None
 
     @property
     def is_all_day(self) -> bool:
         return self.start_time is None and self.end_time is None
 
     def summary(self, title_prefix: str) -> str:
+        if self.title_override.strip():
+            return self.title_override.strip()
         clean_title = title_prefix.strip()
         clean_location = self.location.strip()
         if clean_location:
             return f"{clean_title} - {clean_location}"
         return clean_title
-

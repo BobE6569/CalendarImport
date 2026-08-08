@@ -6,6 +6,8 @@ from .models import ItineraryEvent
 
 
 def event_notes(event: ItineraryEvent) -> str:
+    if event.note_override:
+        return event.note_override
     lines = [_from_to_line(event)]
     lines.extend(f"{label}: {value}" for label, value in event.notes)
     if event.url:

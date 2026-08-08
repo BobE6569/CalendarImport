@@ -1,10 +1,11 @@
 # CalendarImport
 
-CalendarImport is a standalone desktop program that imports itinerary rows from an Excel workbook into an Outlook or Google calendar.
+CalendarImport is a standalone desktop program that imports vacation itinerary rows or PCS Club Events from an Excel workbook into an Outlook or Google calendar.
 
 ## What It Does
 
 - Asks you to select an Excel file.
+- Lets you choose either `Vacation Itinerary` or `PCS Club Events`.
 - Reads the `Itinerary` tab.
 - Uses the first row as column titles.
 - Prompts for an event title prefix, defaulting to the Excel file name.
@@ -18,6 +19,8 @@ CalendarImport is a standalone desktop program that imports itinerary rows from 
 
 ## Excel Layout
 
+### Vacation Itinerary
+
 The `Itinerary` sheet must start with these first five columns:
 
 | Column | Meaning |
@@ -30,6 +33,33 @@ The `Itinerary` sheet must start with these first five columns:
 
 Any columns after `Link` are added to the event notes when their row value is non-blank.
 
+### PCS Club Events
+
+PCS Club Events reads the first worksheet in the selected Excel file. The first six columns must be:
+
+| Column | Meaning |
+| --- | --- |
+| Date | Date for the PCS event |
+| Event | PCS event title |
+| Location | Club location where the event takes place |
+| From | Start time |
+| To | End time, or blank to use 10:00 PM |
+| Reservations Open | Date reservations open |
+
+Each PCS row creates or updates two Outlook events:
+
+| Event | Title | Date / Time |
+| --- | --- | --- |
+| Reservation reminder | `PCS Reservation: <Event>` | `Reservations Open` at 9:00 AM |
+| Club event | `PCS: <Event>` | `Date`, from `From` to `To` or 10:00 PM |
+
+PCS event location is set to `8060 Grand Lely Dr Naples FL 34113 United States`. The calendar notes contain:
+
+```text
+<Date> <From> <To> <Event>
+<Location>
+```
+
 ## Calendar Event Rules
 
 - Event title is `<title prefix> - <location>` when location exists, otherwise just `<title prefix>`.
@@ -38,6 +68,7 @@ Any columns after `Link` are added to the event notes when their row value is no
 - If both are filled, start uses `From` and end uses `To`.
 - Existing events are found by exact title in the selected calendar. When several match, CalendarImport prefers the one on the same date.
 - If an optional invitee is provided, CalendarImport adds that invitee to each event.
+- Outlook desktop exposes one standard pop-up reminder per appointment. CalendarImport sets the PCS reservation reminder at the reservation event time and the PCS club-event reminder one hour before the event.
 
 ## Setup
 
