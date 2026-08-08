@@ -142,7 +142,6 @@ class OutlookCalendarClient:
         appointment.Location = event.location
         appointment.Body = event_notes(event)
         appointment.AllDayEvent = bool(event.is_all_day)
-        self._apply_invitee(appointment, invitee)
         self._apply_reminder(appointment, event.reminder_minutes_before_start)
 
         if event.is_all_day:
@@ -164,6 +163,8 @@ class OutlookCalendarClient:
                 appointment.WebPage = event.url
             except Exception:
                 pass
+
+        self._apply_invitee(appointment, invitee)
 
     def _apply_event_time_zone(self, appointment, iana_time_zone: str) -> bool:
         windows_time_zone = IANA_TO_WINDOWS_TIME_ZONE.get(iana_time_zone)
@@ -194,6 +195,7 @@ class OutlookCalendarClient:
                 recipient = recipients.Item(index)
                 if recipient.Name.lower() == clean_invitee.lower() or getattr(recipient, "Address", "").lower() == clean_invitee.lower():
                     recipient.Type = OL_REQUIRED
+                    recipients.ResolveAll()
                     return
             recipient = recipients.Add(clean_invitee)
             recipient.Type = OL_REQUIRED

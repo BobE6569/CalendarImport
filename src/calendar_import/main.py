@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from tkinter import Button, Label, Listbox, Radiobutton, StringVar, Tk, filedialog, messagebox, simpledialog
+from tkinter import Button, Entry, Label, Listbox, Radiobutton, StringVar, Tk, filedialog, messagebox, simpledialog
 
 from .calendar_client import GoogleCalendarClient
 from .excel_reader import ItineraryReadError, read_itinerary
@@ -18,8 +18,8 @@ class CalendarImportApp:
     def __init__(self) -> None:
         self.root = Tk()
         self.root.title("CalendarImport")
-        self.root.geometry("560x560")
-        self.root.minsize(560, 560)
+        self.root.geometry("560x600")
+        self.root.minsize(560, 600)
         self.status = StringVar(value="Select an Excel itinerary file to begin.")
         self.preferences = Preferences(PROJECT_DIR / "calendar_import_settings.json")
         self.excel_path: Path | None = None
@@ -63,6 +63,8 @@ class CalendarImportApp:
             value="google",
             command=self.clear_calendar_connection,
         ).pack()
+        Label(self.root, text="Optional invitee email").pack(pady=(8, 0))
+        Entry(self.root, textvariable=self.invitee, width=36).pack(pady=(0, 4))
         Button(self.root, text="Connect Calendar", command=self.connect_calendar, width=24).pack(pady=4)
         Label(self.root, text="Target calendar").pack(pady=(14, 2))
         self.calendar_list = Listbox(self.root, height=6, exportselection=False)
@@ -101,7 +103,8 @@ class CalendarImportApp:
             initialvalue=self.invitee.get(),
             parent=self.root,
         )
-        self.invitee.set((invitee or "").strip())
+        if invitee is not None:
+            self.invitee.set(invitee.strip())
         self.preferences.set("last_invitee", self.invitee.get())
         invitee_status = f" Invitee: {self.invitee.get()}" if self.invitee.get() else ""
         title_status = f" Title: {self.title_prefix.get()}." if self.processing_mode.get() == "vacation" else ""
@@ -114,6 +117,7 @@ class CalendarImportApp:
         self.status.set(f"Selected {self.calendar_provider.get().capitalize()}. Connect to choose a calendar.")
 
     def connect_calendar(self) -> None:
+        self.preferences.set("last_invitee", self.invitee.get().strip())
         try:
             self.calendar_client = self._create_calendar_client()
             self.calendars = self.calendar_client.list_calendars()
@@ -131,7 +135,8 @@ class CalendarImportApp:
             self.calendar_list.insert("end", label)
         if self.calendars:
             self.calendar_list.selection_set(selected_index)
-        self.status.set(f"Connected to {self.calendar_provider.get().capitalize()}. Choose a target calendar, then import events.")
+        invitee_status = f" Invitee: {self.invitee.get().strip()}" if self.invitee.get().strip() else ""
+        self.status.set(f"Connected to {self.calendar_provider.get().capitalize()}. Choose a target calendar, then import events.{invitee_status}")
 
     def import_events(self) -> None:
         if not self.excel_path:
@@ -159,12 +164,14 @@ class CalendarImportApp:
             return
 
         calendar_id = self.calendars[selection[0]]["id"]
+        invitee = self.invitee.get().strip()
+        self.preferences.set("last_invitee", invitee)
         try:
             counts = self.calendar_client.upsert_events(
                 calendar_id,
                 self.title_prefix.get(),
                 events,
-                self.invitee.get(),
+                invitee,
                 self.update_progress,
             )
         except Exception as exc:
