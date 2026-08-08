@@ -21,7 +21,7 @@ def test_pcs_reader_creates_reservation_and_event_items(tmp_path):
     assert reservation.event_date == date(2026, 8, 1)
     assert reservation.start_time == time(9, 0)
     assert reservation.end_time == time(9, 0)
-    assert reservation.location == "Main Dining Room"
+    assert reservation.location == ""
     assert reservation.note_override == "2026-09-12 6:00 PM 10:00 PM Wine Dinner\nMain Dining Room"
     assert reservation.reminder_minutes_before_start == 0
 
@@ -32,4 +32,3 @@ def test_pcs_reader_creates_reservation_and_event_items(tmp_path):
     assert event.location == PCS_EVENT_LOCATION
     assert event.note_override == "2026-09-12 6:00 PM 10:00 PM Wine Dinner\nMain Dining Room"
     assert event.reminder_minutes_before_start == 60
-

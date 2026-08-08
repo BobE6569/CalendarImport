@@ -8,6 +8,8 @@ from .models import ItineraryEvent
 
 OL_APPOINTMENT_ITEM = 1
 OL_FOLDER_CALENDAR = 9
+OL_MEETING = 1
+OL_REQUIRED = 1
 
 IANA_TO_WINDOWS_TIME_ZONE = {
     "America/Argentina/Buenos_Aires": "Argentina Standard Time",
@@ -186,11 +188,16 @@ class OutlookCalendarClient:
         if not clean_invitee:
             return
         try:
+            appointment.MeetingStatus = OL_MEETING
             recipients = appointment.Recipients
             for index in range(1, recipients.Count + 1):
-                if recipients.Item(index).Name.lower() == clean_invitee.lower():
+                recipient = recipients.Item(index)
+                if recipient.Name.lower() == clean_invitee.lower() or getattr(recipient, "Address", "").lower() == clean_invitee.lower():
+                    recipient.Type = OL_REQUIRED
                     return
-            recipients.Add(clean_invitee)
+            recipient = recipients.Add(clean_invitee)
+            recipient.Type = OL_REQUIRED
+            recipients.ResolveAll()
         except Exception:
             pass
 

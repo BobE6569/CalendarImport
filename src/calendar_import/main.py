@@ -18,7 +18,8 @@ class CalendarImportApp:
     def __init__(self) -> None:
         self.root = Tk()
         self.root.title("CalendarImport")
-        self.root.geometry("560x500")
+        self.root.geometry("560x560")
+        self.root.minsize(560, 560)
         self.status = StringVar(value="Select an Excel itinerary file to begin.")
         self.preferences = Preferences(PROJECT_DIR / "calendar_import_settings.json")
         self.excel_path: Path | None = None
@@ -65,8 +66,8 @@ class CalendarImportApp:
         Button(self.root, text="Connect Calendar", command=self.connect_calendar, width=24).pack(pady=4)
         Label(self.root, text="Target calendar").pack(pady=(14, 2))
         self.calendar_list = Listbox(self.root, height=6, exportselection=False)
-        self.calendar_list.pack(fill="both", expand=True, padx=24, pady=4)
-        Button(self.root, text="Import / Update Events", command=self.import_events, width=24).pack(pady=(8, 18))
+        self.calendar_list.pack(fill="x", expand=False, padx=24, pady=4)
+        Button(self.root, text="Import / Update Events", command=self.import_events, width=24, height=2).pack(pady=(12, 24))
 
     def run(self) -> None:
         self.root.mainloop()

@@ -47,7 +47,7 @@ def read_pcs_club_events(path: Path) -> list[ItineraryEvent]:
             ItineraryEvent(
                 row_number=row_number,
                 event_date=reservations_open_date,
-                location=club_location,
+                location="",
                 start_time=time(9, 0),
                 end_time=time(9, 0),
                 url="",
@@ -84,4 +84,3 @@ def _pcs_note(event_date, from_time, to_time, event_title: str, club_location: s
 
 def _format_time(value: time) -> str:
     return value.strftime("%I:%M %p").lstrip("0")
-
